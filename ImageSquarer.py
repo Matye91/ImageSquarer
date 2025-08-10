@@ -1,26 +1,36 @@
 import os
-from PIL import Image, ImageOps
+from PIL import Image
 
 def make_square(image_path, output_path, fill_color=(255, 255, 255)):
     # Open the image
-    img = Image.open(image_path).convert("RGB")  # Convert to RGB for JPG format
-    
+    img = Image.open(image_path)
+
+    # Handle transparency for PNG files
+    if img.mode == "RGBA":
+        # Create a white background image
+        white_bg = Image.new("RGB", img.size, fill_color)
+        # Paste the original image onto the white background using the alpha channel as a mask
+        img = Image.alpha_composite(white_bg.convert("RGBA"), img).convert("RGB")
+
+    else:
+        img = img.convert("RGB")  # Convert to RGB for non-transparent images
+
     # Get current dimensions
     width, height = img.size
     print(f"Processing {image_path}: {width}x{height}")
-    
+
     # Find the max dimension to make the image square
     max_dim = max(width, height)
-    
+
     # Create a new image with a white background
     new_img = Image.new('RGB', (max_dim, max_dim), fill_color)
-    
+
     # Paste the original image in the center
     new_img.paste(img, ((max_dim - width) // 2, (max_dim - height) // 2))
-    
+
     # Ensure output is in .jpg format
     output_path_jpg = os.path.splitext(output_path)[0] + '.jpg'
-    
+
     # Save the new image
     new_img.save(output_path_jpg, format="JPEG")
     print(f"Saved squared image as JPG at: {output_path_jpg}")
@@ -32,7 +42,7 @@ def process_folder(folder_path):
         return
 
     # Acceptable file formats
-    image_extensions = {'.jpg', '.jpeg', '.png'}
+    image_extensions = {'.jpg', '.jpeg', '.png', '.webp'}
     
     # Get all image files in the directory with specified formats
     image_files = [f for f in os.listdir(folder_path) if os.path.splitext(f)[1].lower() in image_extensions]
