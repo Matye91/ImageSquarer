@@ -1,5 +1,9 @@
 import os
 from PIL import Image
+from pillow_heif import register_heif_opener
+
+# Allow Pillow to open .heic/.heif files
+register_heif_opener()
 
 def make_square(image_path, output_path, fill_color=(255, 255, 255)):
     # Open the image
@@ -42,7 +46,7 @@ def process_folder(folder_path):
         return
 
     # Acceptable file formats
-    image_extensions = {'.jpg', '.jpeg', '.png', '.webp'}
+    image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'}
     
     # Get all image files in the directory with specified formats
     image_files = [f for f in os.listdir(folder_path) if os.path.splitext(f)[1].lower() in image_extensions]
