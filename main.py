@@ -1,11 +1,13 @@
 import os
 from PIL import Image
-from pillow_heif import register_heif_opener
+from pillow_heif.as_plugin import register_heif_opener
 
 # Allow Pillow to open .heic/.heif files
 register_heif_opener()
 
-def make_square(image_path, output_path, fill_color=(255, 255, 255)):
+MAX_DIMENSION = 2400
+
+def make_square(image_path, output_path, fill_color=(255, 255, 255), max_dimension=MAX_DIMENSION):
     # Open the image
     img = Image.open(image_path)
 
@@ -31,6 +33,10 @@ def make_square(image_path, output_path, fill_color=(255, 255, 255)):
 
     # Paste the original image in the center
     new_img.paste(img, ((max_dim - width) // 2, (max_dim - height) // 2))
+
+    # Scale down if the square exceeds the maximum allowed dimension
+    if max_dim > max_dimension:
+        new_img = new_img.resize((max_dimension, max_dimension), Image.Resampling.LANCZOS)
 
     # Ensure output is in .jpg format
     output_path_jpg = os.path.splitext(output_path)[0] + '.jpg'
