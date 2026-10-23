@@ -7,7 +7,7 @@ register_heif_opener()
 
 MAX_DIMENSION = 2400
 
-def make_square(image_path, output_path, fill_color=(255, 255, 255), max_dimension=MAX_DIMENSION):
+def make_square(image_path, output_path, fill_color=(255, 255, 255), max_dimension=MAX_DIMENSION, use_webp=False):
     # Open the image
     img = Image.open(image_path)
 
@@ -38,14 +38,17 @@ def make_square(image_path, output_path, fill_color=(255, 255, 255), max_dimensi
     if max_dim > max_dimension:
         new_img = new_img.resize((max_dimension, max_dimension), Image.Resampling.LANCZOS)
 
-    # Ensure output is in .jpg format
-    output_path_jpg = os.path.splitext(output_path)[0] + '.jpg'
+    # Save as .webp or .jpg depending on user preference
+    if use_webp:
+        output_path_final = os.path.splitext(output_path)[0] + '.webp'
+        new_img.save(output_path_final, format="WEBP")
+    else:
+        output_path_final = os.path.splitext(output_path)[0] + '.jpg'
+        new_img.save(output_path_final, format="JPEG")
 
-    # Save the new image
-    new_img.save(output_path_jpg, format="JPEG")
-    print(f"Saved squared image as JPG at: {output_path_jpg}")
+    print(f"Saved squared image at: {output_path_final}")
 
-def process_folder(folder_path):
+def process_folder(folder_path, use_webp=False):
     # Validate folder path
     if not os.path.isdir(folder_path):
         print("The provided path is not a valid directory.")
@@ -70,11 +73,15 @@ def process_folder(folder_path):
     for image_file in image_files:
         input_path = os.path.join(folder_path, image_file)
         output_path = os.path.join(output_folder, os.path.splitext(image_file)[0])  # Base name for output
-        make_square(input_path, output_path)
+        make_square(input_path, output_path, use_webp=use_webp)
 
 if __name__ == "__main__":
     # Prompt the user for a folder location
     folder_path = input("Please enter the folder path containing the images: ")
-    
-    # Process the folder and convert images to square and .jpg format
-    process_folder(folder_path)
+
+    # Ask the user whether they want WebP output instead of JPG
+    webp_choice = input("Do you want the output images in WebP format? (Y/N): ").strip().lower()
+    use_webp = webp_choice == 'y'
+
+    # Process the folder and convert images to square (.webp or .jpg)
+    process_folder(folder_path, use_webp=use_webp)
